@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+.cache
+coverage
+.DS_Store
+.env
+.env.local
+.env.*.local
+*.log
+.vite
+.eslintcache
+.idea
+.vscode
+!.vscode/settings.json
+.claude/
