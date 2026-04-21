@@ -2,10 +2,59 @@
 
 @theme {
   --color-bg: #0b0e11;
+  --color-bg-raised: #14181f;
+  --color-bg-elevated: #1b2028;
+  --color-border: #232930;
+  --color-border-strong: #2b333d;
   --color-text: #eaecef;
+  --color-text-muted: #b7bdc6;
   --color-text-subtle: #848e9c;
+
+  --color-bid: #0ecb81;
+  --color-bid-bar: rgba(14, 203, 129, 0.14);
+  --color-bid-flash: rgba(14, 203, 129, 0.35);
+
+  --color-ask: #f6465d;
+  --color-ask-bar: rgba(246, 70, 93, 0.14);
+  --color-ask-flash: rgba(246, 70, 93, 0.35);
+
+  --color-neutral-flash: rgba(255, 255, 255, 0.18);
+  --color-hover: rgba(255, 255, 255, 0.04);
+
   --font-sans:
     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+
+  --animate-flash-new: flash-new 420ms ease-out;
+  --animate-flash-up: flash-up 360ms ease-out;
+  --animate-flash-down: flash-down 360ms ease-out;
+}
+
+@keyframes flash-new {
+  from {
+    background-color: var(--color-neutral-flash);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes flash-up {
+  from {
+    background-color: var(--color-bid-flash);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes flash-down {
+  from {
+    background-color: var(--color-ask-flash);
+  }
+  to {
+    background-color: transparent;
+  }
 }
 
 html,
@@ -19,6 +68,17 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
   color: var(--color-text);
+  font-feature-settings:
+    'tnum' 1,
+    'cv11' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font: inherit;
+}
+
+::selection {
+  background-color: rgba(252, 213, 53, 0.3);
 }

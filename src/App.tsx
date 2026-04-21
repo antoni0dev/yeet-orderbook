@@ -1,7 +1,25 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
+import { SelectedSymbolProvider } from './modules/market/state/SelectedSymbolProvider'
+import { OrderBookPage } from './modules/orderBook/panel/OrderBookPage'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: Infinity,
+      gcTime: 0
+    }
+  }
+})
+
 export const App = (): ReactNode => (
-  <main className="flex min-h-dvh items-center justify-center p-6 text-sm text-[color:var(--color-text-subtle)]">
-    Yeet Order Book scaffold. Implementation lands on the feat/yeet-order-book branch.
-  </main>
+  <QueryClientProvider client={queryClient}>
+    <SelectedSymbolProvider>
+      <OrderBookPage />
+    </SelectedSymbolProvider>
+  </QueryClientProvider>
 )
