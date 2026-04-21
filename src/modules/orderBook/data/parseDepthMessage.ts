@@ -1,9 +1,8 @@
 import { attempt } from '@/lib/attempt/attempt'
+import type { StreamParseResult } from '@/lib/ws/createStreamManager'
 
 import type { OrderBookSnapshot, PriceLevel, RawDepthMessage, RawLevel } from '../types'
 import { depthMessageSchema } from './depthMessageSchema'
-
-type ParseState = { hasValidated: boolean }
 
 const mapLevels = (raw: readonly RawLevel[]): readonly PriceLevel[] =>
   raw
@@ -16,20 +15,22 @@ const toSnapshot = (raw: RawDepthMessage): OrderBookSnapshot => ({
   asks: mapLevels(raw.asks)
 })
 
+const createInvalidDepthMessageError = (): Error => new Error('Received malformed order book payload')
+
+const createInvalidDepthJsonError = (): Error => new Error('Received non-JSON order book payload')
+
 export const createDepthMessageParser = () => {
-  const state: ParseState = { hasValidated: false }
-
-  return (rawJson: string): OrderBookSnapshot | null => {
-    const parseResult = attempt(() => JSON.parse(rawJson) as unknown)
-    if (parseResult.error !== undefined) return null
-
-    if (!state.hasValidated) {
-      const validation = depthMessageSchema.safeParse(parseResult.data)
-      if (!validation.success) return null
-      state.hasValidated = true
-      return toSnapshot(validation.data)
+  return (rawJson: string): StreamParseResult<OrderBookSnapshot> => {
+    const parseResult = attempt<unknown>(() => JSON.parse(rawJson))
+    if (parseResult.error !== undefined) {
+      return { kind: 'error', error: createInvalidDepthJsonError() }
     }
 
-    return toSnapshot(parseResult.data as RawDepthMessage)
+    const validation = depthMessageSchema.safeParse(parseResult.data)
+    if (!validation.success) {
+      return { kind: 'error', error: createInvalidDepthMessageError() }
+    }
+
+    return { kind: 'success', data: toSnapshot(validation.data) }
   }
 }

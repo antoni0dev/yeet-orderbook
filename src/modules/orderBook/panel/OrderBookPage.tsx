@@ -7,7 +7,6 @@ import { ControlsBar } from '../controls/ControlsBar'
 import { OrderBookHeader } from '../header/OrderBookHeader'
 import { defaultPriceStepFor } from '../logic/defaultPriceStepFor'
 import { DepthModeProvider } from '../state/DepthModeProvider'
-import { HoveredRowProvider } from '../state/HoveredRowProvider'
 import { PriceStepProvider } from '../state/PriceStepProvider'
 import { ShowRatioProvider } from '../state/ShowRatioProvider'
 import { OrderBook } from './OrderBook'
@@ -21,10 +20,8 @@ export const OrderBookPage = (): ReactNode => {
         <PriceStepProvider key={symbol} initialValue={defaultPriceStepFor(symbol)}>
           <DepthModeProvider>
             <ShowRatioProvider>
-              <HoveredRowProvider>
-                <ControlsBar />
-                <OrderBook />
-              </HoveredRowProvider>
+              <ControlsBar />
+              <OrderBook />
             </ShowRatioProvider>
           </DepthModeProvider>
         </PriceStepProvider>

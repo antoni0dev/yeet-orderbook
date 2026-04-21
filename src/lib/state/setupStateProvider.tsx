@@ -11,16 +11,23 @@ import { shouldBePresent } from '../assert/shouldBePresent'
 
 type ChildrenProp = { children: ReactNode }
 type StateTuple<T> = readonly [T, Dispatch<SetStateAction<T>>]
+type ProviderProps<T> = ChildrenProp & { initialValue?: T }
 type Baked<T> = { present: true; value: T } | { present: false }
 
-export function setupStateProvider<T>(
+type SetupStateProvider = {
+  <T>(
+    contextId: string,
+    initialValue: T
+  ): readonly [(props: ProviderProps<T>) => ReactNode, () => StateTuple<T>]
+  <T>(
+    contextId: string
+  ): readonly [(props: ChildrenProp & { initialValue: T }) => ReactNode, () => StateTuple<T>]
+}
+
+export const setupStateProvider: SetupStateProvider = <T,>(
   contextId: string,
-  initialValue: T
-): readonly [(props: ChildrenProp & { initialValue?: T }) => ReactNode, () => StateTuple<T>]
-export function setupStateProvider<T>(
-  contextId: string
-): readonly [(props: ChildrenProp & { initialValue: T }) => ReactNode, () => StateTuple<T>]
-export function setupStateProvider<T>(contextId: string, ...bakedArgs: [] | [T]) {
+  ...bakedArgs: [] | [T]
+) => {
   const baked: Baked<T> =
     bakedArgs.length === 1 ? { present: true, value: bakedArgs[0] } : { present: false }
   const Context = createContext<StateTuple<T> | undefined>(undefined)
@@ -31,9 +38,9 @@ export function setupStateProvider<T>(contextId: string, ...bakedArgs: [] | [T])
     throw new Error(`${contextId} provider requires an initialValue prop`)
   }
 
-  const Provider = ({ children, initialValue }: ChildrenProp & { initialValue?: T }): ReactNode => {
+  const Provider = ({ children, initialValue }: ProviderProps<T>): ReactNode => {
     const tuple = useState<T>(() => resolveInitial(initialValue))
-    return <Context.Provider value={tuple as StateTuple<T>}>{children}</Context.Provider>
+    return <Context.Provider value={tuple}>{children}</Context.Provider>
   }
 
   const useValue = (): StateTuple<T> => {
@@ -41,5 +48,10 @@ export function setupStateProvider<T>(contextId: string, ...bakedArgs: [] | [T])
     return shouldBePresent(value, `${contextId} context`)
   }
 
-  return [Provider, useValue] as const
+  const result: readonly [(props: ProviderProps<T>) => ReactNode, () => StateTuple<T>] = [
+    Provider,
+    useValue
+  ]
+
+  return result
 }

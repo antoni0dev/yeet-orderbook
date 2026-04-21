@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react'
+import type { ChangeEvent, ReactNode } from 'react'
+
+import { ensurePresent } from '@/lib/assert/ensurePresent'
 
 type SelectOption<T extends string> = {
   value: T
@@ -20,13 +22,23 @@ export const Select = <T extends string>({
   ariaLabel,
   size = 'md'
 }: SelectProps<T>): ReactNode => {
+  const resolveValue = (rawValue: string): T =>
+    ensurePresent(
+      options.find(option => option.value === rawValue),
+      `${ariaLabel} option`
+    ).value
+
+  const handleChange = ({ currentTarget }: ChangeEvent<HTMLSelectElement>) => {
+    onChange(resolveValue(currentTarget.value))
+  }
+
   const sizing = size === 'sm' ? 'h-7 text-xs' : 'h-8 text-sm'
   return (
     <div className="relative inline-flex items-center">
       <select
         aria-label={ariaLabel}
         value={value}
-        onChange={event => onChange(event.target.value as T)}
+        onChange={handleChange}
         className={`${sizing} appearance-none rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] px-2 pr-7 text-[color:var(--color-text)] outline-none focus:border-[color:var(--color-border-strong)]`}
       >
         {options.map(option => (

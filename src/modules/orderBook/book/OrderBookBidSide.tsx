@@ -4,17 +4,17 @@ import { marketConfigs } from '@/modules/market/config'
 import { useSelectedSymbol } from '@/modules/market/state/SelectedSymbolProvider'
 
 import { useGroupedOrderBook } from '../state/GroupedOrderBookProvider'
-import { useHoveredRow } from '../state/HoveredRowProvider'
+import { useSetHoveredRow } from '../state/HoveredRowProvider'
 import { OrderBookRow } from './OrderBookRow'
 
 export const OrderBookBidSide = (): ReactNode => {
   const { bids, maxBidQty, totalBidQty } = useGroupedOrderBook()
   const [symbol] = useSelectedSymbol()
-  const [, setHovered] = useHoveredRow()
+  const setHoveredRow = useSetHoveredRow()
   const { qtyDecimals } = marketConfigs[symbol]
 
   return (
-    <div role="rowgroup" aria-label="Bids" onMouseLeave={() => setHovered(null)}>
+    <div role="rowgroup" aria-label="Bids" onMouseLeave={() => setHoveredRow(null)}>
       {bids.map((level, index) => (
         <OrderBookRow
           key={level.price}
