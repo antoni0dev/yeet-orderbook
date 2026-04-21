@@ -53,7 +53,7 @@ const pickFlash = ({ prev, next, side }: PickFlashInput): FlashKind | null => {
   return flashForSide[side][direction]
 }
 
-export const isRowHighlightedFor = ({ index, hoveredIndex }: IsRowHighlightedForInput): boolean =>
+const isRowHighlightedFor = ({ index, hoveredIndex }: IsRowHighlightedForInput): boolean =>
   index <= hoveredIndex
 
 const barRatioFor = ({ mode, level, maxQty, totalQty }: BarRatioForInput) =>

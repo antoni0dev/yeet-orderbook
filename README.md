@@ -32,7 +32,7 @@ Node 22+. `pnpm` enforced via `packageManager` in `package.json`.
 - **Tailwind v4** - CSS-first `@theme` tokens in `src/index.css`, zero-config via `@tailwindcss/vite`. Used for layout and color tokens; flash animations are hand-rolled CSS keyframes.
 - **TanStack Query v5** - the WebSocket-to-cache bridge uses React Query as the presentation-layer state holder. The initial query awaits the next snapshot, then live updates stream into the same cache entry; transport and parse failures can fail that query and are also logged by the stream layer.
 - **zod 4** - schema validation on every WebSocket payload before it reaches domain mapping, so malformed frames fail fast instead of poisoning the live book.
-- **Vitest 4 + happy-dom** - fast tests for the pure logic plus focused coverage around shared utilities, stream wiring, and small UI behaviors.
+- **Vitest 4 + happy-dom** - fast unit tests on the pure logic (grouping, accumulation, ratio, rounding, formatting).
 - **ESLint 10 flat config + typescript-eslint 8** - enforces `type` over `interface`, `react-compiler/react-compiler`, `react-hooks/exhaustive-deps`, `simple-import-sort`, unused-imports.
 - **Knip 6** - fails the check pipeline on unused exports, files, or dependencies.
 - **No Zustand** - every piece of shared state is panel-scoped; `setupStateProvider` / `setupValueProvider` keep state colocated with its UI subtree, which minimises re-render blast radius. Adding a store would be premature.
@@ -103,7 +103,7 @@ src/
 - **Real async error states.** The initial query now waits on the shared stream manager instead of a never-settling promise, so transport and parse failures can surface through `<MatchQuery>` and recover on later snapshots.
 - **Visibilitychange pause.** Hidden tabs close the socket; becoming visible triggers an immediate reconnect. Prevents buffering useless updates in a backgrounded tab.
 - **Pattern matching over branching.** `match()` and Record lookups replace switch/case and nested ternaries. The row's flash direction is a `Record<Side, Record<FlashDirection, FlashKind>>`, so adding a side or direction is a compile-time contract.
-- **Pure logic in `logic/` with colocated tests.** Grouping, accumulation, ratio, rounding, parser validation, shared stream behavior, hover direction, and assertion helpers are covered by Vitest unit tests.
+- **Pure logic in `logic/` with colocated tests.** Grouping, accumulation, ratio, and rounding have no side effects and are covered by Vitest unit tests.
 - **Fail-fast `ensurePresent`.** Context hooks and the React root pull-out are assertions, not optional chains.
 - **No `useMemo` / `useCallback`.** The project targets React Compiler (enforced by `react-compiler/react-compiler: error` in ESLint). Natural code is the preferred input to the compiler.
 

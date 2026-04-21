@@ -41,7 +41,7 @@ type SyncOrderBookQueryCacheInput = {
   symbol: Symbol
 }
 
-export const syncOrderBookQueryCache = ({
+const syncOrderBookQueryCache = ({
   queryClient,
   symbol
 }: SyncOrderBookQueryCacheInput): (() => void) => {
@@ -64,7 +64,7 @@ export const syncOrderBookQueryCache = ({
   }
 }
 
-export const createOrderBookQueryOptions = (
+const createOrderBookQueryOptions = (
   symbol: Symbol
 ): UseQueryOptions<
   OrderBookSnapshot,
