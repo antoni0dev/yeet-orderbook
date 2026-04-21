@@ -3,9 +3,8 @@ import { backoff } from './backoff'
 type CreateReconnectingSocketInput = {
   url: string
   onMessage: (data: string) => void
+  onFailure?: (error: Error) => void
   onOpen?: () => void
-  onClose?: () => void
-  onError?: (err: Event) => void
   silentReconnectMs?: number
 }
 
@@ -13,12 +12,18 @@ type ReconnectingSocket = {
   close: () => void
 }
 
+const createSocketError = (url: string): Error => new Error(`WebSocket transport error on ${url}`)
+
+const createSocketClosedError = (url: string, event: CloseEvent): Error => {
+  const reasonSuffix = event.reason.length > 0 ? `: ${event.reason}` : ''
+  return new Error(`WebSocket closed on ${url} with code ${event.code}${reasonSuffix}`)
+}
+
 export const createReconnectingSocket = ({
   url,
   onMessage,
+  onFailure,
   onOpen,
-  onClose,
-  onError,
   silentReconnectMs = 15_000
 }: CreateReconnectingSocketInput): ReconnectingSocket => {
   let socket: WebSocket | null = null
@@ -65,7 +70,14 @@ export const createReconnectingSocket = ({
     teardownSocket()
 
     const next = new WebSocket(url)
+    let hasReportedFailure = false
     socket = next
+
+    const reportFailure = (error: Error) => {
+      if (hasReportedFailure) return
+      hasReportedFailure = true
+      onFailure?.(error)
+    }
 
     next.onopen = () => {
       if (socket !== next) return
@@ -80,16 +92,16 @@ export const createReconnectingSocket = ({
       if (typeof event.data === 'string') onMessage(event.data)
     }
 
-    next.onerror = event => {
+    next.onerror = () => {
       if (socket !== next) return
-      onError?.(event)
+      reportFailure(createSocketError(url))
     }
 
-    next.onclose = () => {
+    next.onclose = event => {
       if (socket !== next) return
       socket = null
       clearSilentTimer()
-      onClose?.()
+      reportFailure(createSocketClosedError(url, event))
       if (isClosedByUser || isPaused) return
       const delay = backoff({ attempt })
       attempt += 1

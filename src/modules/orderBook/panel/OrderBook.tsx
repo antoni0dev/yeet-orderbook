@@ -12,6 +12,7 @@ import { SpreadRow } from '../book/SpreadRow'
 import { useOrderBookQuery } from '../data/useOrderBookQuery'
 import { RatioBar } from '../ratio/RatioBar'
 import { GroupedOrderBookProvider } from '../state/GroupedOrderBookProvider'
+import { HoveredRowProvider } from '../state/HoveredRowProvider'
 
 export const OrderBook = (): ReactNode => {
   const [symbol] = useSelectedSymbol()
@@ -24,10 +25,12 @@ export const OrderBook = (): ReactNode => {
       error={error => <ErrorState error={error} />}
       success={snapshot => (
         <GroupedOrderBookProvider snapshot={snapshot}>
-          <OrderBookColumnHeaders />
-          <OrderBookAskSide />
-          <SpreadRow />
-          <OrderBookBidSide />
+          <HoveredRowProvider key={symbol}>
+            <OrderBookColumnHeaders />
+            <OrderBookAskSide />
+            <SpreadRow />
+            <OrderBookBidSide />
+          </HoveredRowProvider>
           <RatioBar />
         </GroupedOrderBookProvider>
       )}

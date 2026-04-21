@@ -13,18 +13,39 @@ const streamManager = createStreamManager<OrderBookSnapshot>({
   parse: parseDepthMessage,
   onParseError: channel => {
     console.warn(`[orderBook] dropped malformed message on ${channel}`)
+  },
+  onSocketError: (channel, error) => {
+    console.warn(`[orderBook] socket failure on ${channel}: ${error.message}`)
   }
 })
 
 type SubscribeToOrderBookInput = {
+  onError?: (error: Error) => void
   symbol: Symbol
   onSnapshot: (snapshot: OrderBookSnapshot) => void
 }
 
+type AwaitOrderBookSnapshotInput = {
+  signal?: AbortSignal
+  symbol: Symbol
+}
+
+const getOrderBookChannel = (symbol: Symbol): string =>
+  buildStreamUrl({ symbol, levels: defaultDepthLevels, speedMs: defaultSpeedMs })
+
+export const awaitOrderBookSnapshot = ({
+  signal,
+  symbol
+}: AwaitOrderBookSnapshotInput): Promise<OrderBookSnapshot> =>
+  streamManager.awaitNextMessage(getOrderBookChannel(symbol), signal)
+
 export const subscribeToOrderBook = ({
+  onError,
   symbol,
   onSnapshot
 }: SubscribeToOrderBookInput): (() => void) => {
-  const channel = buildStreamUrl({ symbol, levels: defaultDepthLevels, speedMs: defaultSpeedMs })
-  return streamManager.subscribe(channel, onSnapshot)
+  return streamManager.subscribe(getOrderBookChannel(symbol), {
+    onError,
+    onMessage: onSnapshot
+  })
 }

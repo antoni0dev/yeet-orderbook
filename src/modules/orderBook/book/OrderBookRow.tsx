@@ -6,13 +6,21 @@ import { match } from '@/lib/match/match'
 
 import type { DepthMode, Side } from '../core'
 import { useDepthMode } from '../state/DepthModeProvider'
-import { useHoveredRow } from '../state/HoveredRowProvider'
+import { useHoveredRow, useSetHoveredRow } from '../state/HoveredRowProvider'
 import { usePriceStep } from '../state/PriceStepProvider'
 import type { GroupedLevel } from '../types'
 
 type FlashKind = 'new' | 'up' | 'down'
 type FlashDirection = 'up' | 'down'
 type Flash = { kind: FlashKind; tick: number }
+type PickFlashInput = { prev: number | undefined; next: number; side: Side }
+type IsRowHighlightedForInput = { index: number; hoveredIndex: number }
+type BarRatioForInput = {
+  mode: DepthMode
+  level: GroupedLevel
+  maxQty: number
+  totalQty: number
+}
 
 type OrderBookRowProps = {
   side: Side
@@ -38,20 +46,17 @@ const barColorForSide: Record<Side, string> = {
   ask: 'bg-[color:var(--color-ask-bar)]'
 }
 
-const pickFlash = (prev: number | undefined, next: number, side: Side): FlashKind | null => {
+const pickFlash = ({ prev, next, side }: PickFlashInput): FlashKind | null => {
   if (prev === undefined) return 'new'
   if (next === prev) return null
   const direction: FlashDirection = next > prev ? 'up' : 'down'
   return flashForSide[side][direction]
 }
 
-const isRowHighlightedFor = (index: number, hoveredIndex: number, side: Side): boolean =>
-  match(side, {
-    ask: () => index >= hoveredIndex,
-    bid: () => index <= hoveredIndex
-  })
+const isRowHighlightedFor = ({ index, hoveredIndex }: IsRowHighlightedForInput): boolean =>
+  index <= hoveredIndex
 
-const barRatioFor = (mode: DepthMode, level: GroupedLevel, maxQty: number, totalQty: number) =>
+const barRatioFor = ({ mode, level, maxQty, totalQty }: BarRatioForInput) =>
   match(mode, {
     amount: () => (maxQty > 0 ? level.qty / maxQty : 0),
     cumulative: () => (totalQty > 0 ? level.cumQty / totalQty : 0)
@@ -67,14 +72,15 @@ export const OrderBookRow = ({
 }: OrderBookRowProps): ReactNode => {
   const [priceStep] = usePriceStep()
   const [depthMode] = useDepthMode()
-  const [hovered, setHovered] = useHoveredRow()
+  const hoveredRow = useHoveredRow()
+  const setHoveredRow = useSetHoveredRow()
 
   const prevQtyRef = useRef<number | undefined>(undefined)
   const tickRef = useRef(0)
   const [flash, setFlash] = useState<Flash | null>(null)
 
   useEffect(() => {
-    const kind = pickFlash(prevQtyRef.current, level.qty, side)
+    const kind = pickFlash({ prev: prevQtyRef.current, next: level.qty, side })
     prevQtyRef.current = level.qty
     if (kind === null) return
     tickRef.current += 1
@@ -82,12 +88,17 @@ export const OrderBookRow = ({
   }, [level.qty, side])
 
   const isHighlighted =
-    hovered !== null && hovered.side === side && isRowHighlightedFor(index, hovered.index, side)
-  const barWidthPct = Math.min(100, barRatioFor(depthMode, level, maxQty, totalQty) * 100)
+    hoveredRow !== null &&
+    hoveredRow.side === side &&
+    isRowHighlightedFor({ index, hoveredIndex: hoveredRow.index })
+  const barWidthPct = Math.min(
+    100,
+    barRatioFor({ mode: depthMode, level, maxQty, totalQty }) * 100
+  )
 
   return (
     <div
-      onMouseEnter={() => setHovered({ side, index })}
+      onMouseEnter={() => setHoveredRow({ side, index })}
       data-highlighted={isHighlighted}
       className="relative grid cursor-crosshair grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center px-3 py-[2px] font-mono text-[11.5px] leading-5 tabular-nums data-[highlighted=true]:bg-[color:var(--color-hover)]"
     >
