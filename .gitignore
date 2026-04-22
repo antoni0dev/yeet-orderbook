@@ -14,3 +14,6 @@ coverage
 .vscode
 !.vscode/settings.json
 .claude/
+
+# Local Netlify folder
+.netlify
