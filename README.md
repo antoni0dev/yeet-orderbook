@@ -2,6 +2,8 @@
 
 A Binance-inspired live order book panel built for the Yeet Casino frontend challenge. Live bids and asks over WebSocket, selectable markets, price grouping, decimals that track the group step, show/hide buy-sell ratio, Amount vs Cumulative depth bars, Binance-style hover cascade, and row flash animations.
 
+**Live demo**: https://yeet-orderbook.netlify.app
+
 ## Run
 
 ```sh
@@ -137,12 +139,12 @@ src/
 
 ## Deployment
 
-Prepared for static SPA deployment such as Netlify:
+Deployed on Netlify: https://yeet-orderbook.netlify.app
+
+`netlify.toml` drives the build (`pnpm build` -> `dist/`) and the SPA fallback lives in `public/_redirects`. To re-deploy:
 
 ```sh
-pnpm build
-# publish directory: dist/
-# SPA fallback already in public/_redirects
+pnpm --package=netlify-cli dlx netlify deploy --prod --dir dist
 ```
 
 ## What to look at if you're reviewing
